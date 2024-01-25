@@ -1,0 +1,53 @@
+version: "3.7"
+services:
+  api:
+    build:
+      args:
+        user: sammy
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: php:8.1.1-fpm
+    container_name: adoorei-api
+    restart: unless-stopped
+    working_dir: /data/www/api
+    volumes:
+      - ./:/data/www/api
+    networks:
+      - adoorei-network
+
+  db:
+    image: mysql:8.0
+    container_name: adoorei-db
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    ports:
+      - 3306:3306
+    networks:
+      - adoorei-network
+    volumes:
+      - ./docker/db:/var/lib/mysql
+
+  nginx:
+    image: nginx:alpine
+    container_name: adoorei-nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - ./:/data/www/api
+      - ./docker/nginx:/etc/nginx/conf.d/
+    networks:
+      - adoorei-network
+
+networks:
+  adoorei-network:
+    driver: bridge
