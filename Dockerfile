@@ -7,7 +7,6 @@ USER root
 
 # Install required dependency
 RUN apt-get update && apt-get install -y \
-    zip \
     libxml2-dev \
     libzip-dev
 
@@ -31,9 +30,7 @@ RUN apt-get update && apt-get install -y \
     nano \
     libpng-dev \
     libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip
+    libxml2-dev
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

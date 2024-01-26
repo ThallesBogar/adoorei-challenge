@@ -34,6 +34,7 @@ services:
       - adoorei-network
     volumes:
       - ./docker/db:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   nginx:
     image: nginx:alpine
