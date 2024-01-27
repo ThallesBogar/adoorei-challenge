@@ -12,6 +12,8 @@ class Store extends Model
     protected $table = "stores";
     protected $fillable = ['name'];
 
+    public const LOJA_ABC_LTDA = 1;
+
     public function products()
     {
         return $this->hasMany(Product::class);

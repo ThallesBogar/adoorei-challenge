@@ -14,6 +14,9 @@ class ListProductCategory extends Model
         'name',
     ];
 
+    public const CELLPHONE = 1;
+    public const SOME_OTHER_CATEGORY = 2;
+
     public function products()
     {
         return $this->hasMany(Product::class);
