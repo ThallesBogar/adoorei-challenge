@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\SaleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -24,9 +25,9 @@ Route::prefix('products')->group(function(){
 });
 
 Route::prefix('sales')->group(function(){
-    Route::post('/', 'SaleController@create');
-    Route::get('/list', 'SaleController@list');
-    Route::get('/{id}', 'SaleController@read');
-    Route::post('/{id}/cancel', 'SaleController@cancel');
-    Route::post('/{id}/products', 'SaleController@addProducts');
+    Route::post('/', [SaleController::class, 'create']);
+    Route::get('/list', [SaleController::class, 'list']);
+    Route::get('/{id}', [SaleController::class, 'read']);
+    Route::post('/{id}/cancel', [SaleController::class, 'cancel']);
+    Route::post('/{id}/products', [SaleController::class, 'addProduct']);
 });
