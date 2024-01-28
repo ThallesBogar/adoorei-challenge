@@ -13,7 +13,7 @@ class ProductController extends Controller
             $products = GetAllProductsQuery::execute();
 
             return response()->success('Products retrieved successfully', 200, $products);
-        }catch (\Exception $e){
+        }catch (\Exception | \Throwable $e){
             return response()->error();
         }
     }
