@@ -4,32 +4,38 @@ namespace App\Http\Controllers;
 
 use App\Commands\Sale\CreateSaleCommand;
 use App\Http\Requests\CreateSaleRequest;
+use App\Http\Requests\ReadSaleRequest;
 use App\Queries\Sale\GetSaleQuery;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class SaleController extends Controller
 {
-    public function create(CreateSaleRequest $request){
+    public function create(CreateSaleRequest $request)
+    {
         try{
             DB::beginTransaction();
             $requestValidated = $request->validated();
 
             $newSaleId = CreateSaleCommand::execute($requestValidated['products']);
 
-            if(!is_int($newSaleId)){
-                DB::rollBack();
-                return response()->error("Unexpected error while creating sale", 422);
-            }
-
             DB::commit();
-
             $data = GetSaleQuery::execute($newSaleId);
 
-            return response()->success(data: $data);
-        } catch (\Exception $e) {
+            return response()->success(description : "Sale created successfully.", data : $data);
+        }catch (\Exception | \Throwable $e){
             DB::rollBack();
 
+            return response()->error();
+        }
+    }
+
+    public function read(ReadSaleRequest $request)
+    {
+        try{
+            $data = GetSaleQuery::execute($request->id);
+
+            return response()->success(description : "Sale found.", data : $data);
+        }catch (\Exception | \Throwable $e){
             return response()->error();
         }
     }
