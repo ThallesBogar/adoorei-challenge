@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('list_sale_status_id')->constrained('list_sales_status', 'id')->onUpdate('cascade')->onDelete('cascade');
+            $table->double('total_price', 10, 2)->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrent()->useCurrentOnUpdate();
         });
