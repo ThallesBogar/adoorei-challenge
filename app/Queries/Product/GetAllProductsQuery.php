@@ -12,6 +12,7 @@ class GetAllProductsQuery
                       s.id as store_id,
                       s.name as store_name,
                       p.id as product_id,
+                      lpc.name as product_category,
                       p.name as product_name,
                       p.price as product_price,
                       p.description as product_description
