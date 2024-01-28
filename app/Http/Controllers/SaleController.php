@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Commands\Sale\CreateSaleCommand;
 use App\Http\Requests\CreateSaleRequest;
-use App\Http\Requests\ReadSaleRequest;
+use App\Http\Requests\ValidateSaleIdRequest;
 use App\Queries\Sale\GetSaleQuery;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +29,7 @@ class SaleController extends Controller
         }
     }
 
-    public function read(ReadSaleRequest $request)
+    public function read(ValidateSaleIdRequest $request)
     {
         try{
             $data = GetSaleQuery::execute($request->id);
