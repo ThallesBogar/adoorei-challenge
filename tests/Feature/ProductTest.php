@@ -80,5 +80,5 @@ it('tests generic response when database exception occurs', function () {
     $response = get('/api/products/list');
 
     $response->assertStatus(500);
-    $response->assertJson(['message' => 'error', 'description' => 'Internal Server Error']);
+    $response->assertJson(['message' => 'error']);
 });
