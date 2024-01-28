@@ -16,6 +16,8 @@ class GetSaleQuery
 
         $saleData = [
             'sale_id' => $sale->id,
+            'currency' => 'USD',
+            'total_price' => $sale->total_price,
             'products' => $sale->saleProducts->map(function($saleProduct){
                 return [
                     'product_id' => $saleProduct->product_id,
