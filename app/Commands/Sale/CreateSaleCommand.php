@@ -8,7 +8,7 @@ use App\Models\SaleProduct;
 
 class CreateSaleCommand
 {
-    public static function execute(array $products) : bool
+    public static function execute(array $products) : int
     {
         $newSale = Sale::create([
             'list_sale_status_id' => ListSaleStatus::PENDING,
@@ -22,6 +22,6 @@ class CreateSaleCommand
             ]);
         }
 
-        return true;
+        return $newSale->id;
     }
 }
