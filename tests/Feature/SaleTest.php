@@ -227,3 +227,44 @@ it('lists sales successfully with correct structure and data types', function ()
         }
     }
 });
+
+it('cancel a sale successfully', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product->id,
+                'amount' => 1,
+            ],
+            [
+                'id'     => $product->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
+    $cancelSaleResponse->assertStatus(200);
+});
+
+it('returns an error for canceling a non-existent sale', function (){
+    Artisan::call('migrate:fresh');
+    $nonExistentId = 999999;
+
+    $response = postJson("/api/sales/{$nonExistentId}/cancel", []);
+
+    $response->assertStatus(422);
+    $response->assertJson(['message' => 'error']);
+});
+
+it('validates the input for canceling a sale with invalid id', function (){
+    Artisan::call('migrate:fresh');
+    $response = postJson("/api/sales/not-an-id/cancel", []);
+
+    $response->assertStatus(422);
+    $response->assertJson(['message' => 'error']);
+});
