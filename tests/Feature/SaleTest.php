@@ -1,11 +1,8 @@
 <?php
 
-use App\Models\ListSaleStatus;
 use App\Models\Product;
 use App\Models\Sale;
 use Illuminate\Support\Facades\Artisan;
-
-use function Pest\Laravel\get;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
 
@@ -19,7 +16,7 @@ beforeEach(function (){
     ]);
 });
 
-it('tests creation of valid sale', function () {
+it('tests creation of valid sale', function (){
     Artisan::call('migrate:fresh');
     Artisan::call('db:seed');
 
@@ -58,7 +55,7 @@ it('tests creation of valid sale', function () {
     ]);
 });
 
-it('tests if sale total_price is being calculated correctly when creating new sale', function () {
+it('tests if sale total_price is being calculated correctly when creating new sale', function (){
     Artisan::call('migrate:fresh');
     Artisan::call('db:seed');
 
@@ -78,7 +75,7 @@ it('tests if sale total_price is being calculated correctly when creating new sa
     ]);
 
     $saleId = $response->json('data.sale_id');
-    $sale = Sale::find($saleId);
+    $sale   = Sale::find($saleId);
     expect($sale->total_price)->toBe(3 * $product1->price + 2 * $product2->price);
 });
 
@@ -115,7 +112,7 @@ it('retrieves a sale successfully', function (){
     Artisan::call('migrate:fresh');
     Artisan::call('db:seed');
 
-    $product = Product::first();
+    $product  = Product::first();
     $response = postJson('/api/sales', [
         'products' => [
             [
@@ -129,7 +126,7 @@ it('retrieves a sale successfully', function (){
         ],
     ]);
 
-    $saleId = $response->json('data.sale_id');
+    $saleId   = $response->json('data.sale_id');
     $response = getJson("/api/sales/{$saleId}");
     $response->assertStatus(200);
     $response->assertJsonStructure([
@@ -151,7 +148,7 @@ it('retrieves a sale successfully', function (){
     ]);
 });
 
-it('returns an error for retrieving a non-existent sale', function () {
+it('returns an error for retrieving a non-existent sale', function (){
     Artisan::call('migrate:fresh');
     $nonExistentId = 999999;
 
@@ -161,10 +158,64 @@ it('returns an error for retrieving a non-existent sale', function () {
     $response->assertJson(['message' => 'error']);
 });
 
-it('validates the input for retrieving a sale with invalid id', function () {
+it('validates the input for retrieving a sale with invalid id', function (){
     Artisan::call('migrate:fresh');
     $response = getJson("/api/sales/not-an-id");
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
+});
+
+it('lists sales successfully with correct structure and data types', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product->id,
+                'amount' => 1,
+            ],
+            [
+                'id'     => $product->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $getSalesResponse = getJson("/api/sales/list");
+    $getSalesResponse->assertStatus(200);
+    $getSalesResponse->assertJsonStructure([
+        'message',
+        'description',
+        'data' => [
+            '*' => [
+                'sale_id',
+                'currency',
+                'total_price',
+                'products' => [
+                    '*' => [
+                        'product_id',
+                        'name',
+                        'price',
+                        'amount',
+                    ]
+                ]
+            ]
+        ]
+    ]);
+
+    $data = $getSalesResponse->json('data');
+    foreach ($data as $sale) {
+        expect($sale['sale_id'])->toBeInt();
+        expect($sale['currency'])->toBeString();
+        expect($sale['total_price'])->toBeNumeric();
+        foreach ($sale['products'] as $product) {
+            expect($product['product_id'])->toBeInt();
+            expect($product['name'])->toBeString();
+            expect($product['price'])->toBeNumeric();
+            expect($product['amount'])->toBeInt();
+        }
+    }
 });
