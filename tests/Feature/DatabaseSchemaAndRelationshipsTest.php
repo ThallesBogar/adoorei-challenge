@@ -57,6 +57,7 @@ it('tests if migrations are creating all the tables and columns', function (){
         'sales'                    => [
             'id',
             'list_sale_status_id',
+            'total_price',
             'created_at',
             'updated_at'
         ],
