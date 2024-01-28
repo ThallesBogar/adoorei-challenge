@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Commands\Sale\CancelSaleCommand;
 use App\Commands\Sale\CreateSaleCommand;
+use App\Exceptions\SaleAlreadyCancelledException;
 use App\Http\Requests\CreateSaleRequest;
 use App\Http\Requests\ValidateSaleIdRequest;
 use App\Queries\Sale\GetAllSaleIdQuery;
@@ -52,6 +54,31 @@ class SaleController extends Controller
 
             return response()->success(description : "Sales found.", data : $data);
         }catch (\Exception | \Throwable $e){
+            return response()->error();
+        }
+    }
+
+    public function cancel(ValidateSaleIdRequest $request)
+    {
+        try{
+            $saleId = $request->id;
+
+            $saleCanceled = CancelSaleCommand::execute($saleId);
+
+            if (!$saleCanceled) {
+                return response()->error(description : "Error while canceling sale.", httpStatusCode : 422);
+            }
+
+            return response()->success(description : "Sale canceled successfully.");
+        }catch (\Exception | \Throwable | SaleAlreadyCancelledException $e){
+            if($e instanceof SaleAlreadyCancelledException){
+                return response()->error(description: $e->getMessage(), httpStatusCode: $e->getCode());
+            }
+            
+            if(config('app.debug')){
+                return response()->error(description : $e->getMessage(), data: $e->getTrace());
+            }
+
             return response()->error();
         }
     }
