@@ -41,11 +41,13 @@ it('tests creation of valid sale', function (){
         'description',
         'data' => [
             'sale_id',
+            'status',
             'currency',
             'total_price',
             'products' => [
                 '*' => [
                     'product_id',
+                    'category',
                     'name',
                     'price',
                     'amount',
@@ -134,11 +136,13 @@ it('retrieves a sale successfully', function (){
         'description',
         'data' => [
             'sale_id',
+            'status',
             'currency',
             'total_price',
             'products' => [
                 '*' => [
                     'product_id',
+                    'category',
                     'name',
                     'price',
                     'amount',
@@ -192,11 +196,13 @@ it('lists sales successfully with correct structure and data types', function ()
         'data' => [
             '*' => [
                 'sale_id',
+                'status',
                 'currency',
                 'total_price',
                 'products' => [
                     '*' => [
                         'product_id',
+                        'category',
                         'name',
                         'price',
                         'amount',
@@ -209,10 +215,12 @@ it('lists sales successfully with correct structure and data types', function ()
     $data = $getSalesResponse->json('data');
     foreach ($data as $sale) {
         expect($sale['sale_id'])->toBeInt();
+        expect($sale['status'])->toBeString();
         expect($sale['currency'])->toBeString();
         expect($sale['total_price'])->toBeNumeric();
         foreach ($sale['products'] as $product) {
             expect($product['product_id'])->toBeInt();
+            expect($product['category'])->toBeString();
             expect($product['name'])->toBeString();
             expect($product['price'])->toBeNumeric();
             expect($product['amount'])->toBeInt();

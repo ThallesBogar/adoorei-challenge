@@ -52,6 +52,7 @@ it('lists products successfully with correct structure and data types', function
                 'store_id',
                 'store_name',
                 'product_id',
+                'product_category',
                 'product_name',
                 'product_price',
                 'product_description'
@@ -65,6 +66,7 @@ it('lists products successfully with correct structure and data types', function
         expect($product['store_id'])->toBeInt();
         expect($product['store_name'])->toBeString();
         expect($product['product_id'])->toBeInt();
+        expect($product['product_category'])->toBeString();
         expect($product['product_name'])->toBeString();
         expect($product['product_price'])->toBeNumeric();
         expect($product['product_description'])->toBeString();
