@@ -268,3 +268,29 @@ it('validates the input for canceling a sale with invalid id', function (){
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
 });
+
+it('returns an error for canceling a sale that is already canceled', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product->id,
+                'amount' => 1,
+            ],
+            [
+                'id'     => $product->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
+    $cancelSaleResponse->assertStatus(200);
+
+    $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
+    $cancelSaleResponse->assertStatus(409);
+});
