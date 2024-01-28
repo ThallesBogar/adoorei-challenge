@@ -28,6 +28,10 @@ class SaleController extends Controller
         }catch (\Exception | \Throwable $e){
             DB::rollBack();
 
+            if(config('app.debug')){
+                return response()->error(description : $e->getMessage(), data: $e->getTrace());
+            }
+
             return response()->error();
         }
     }
@@ -39,6 +43,10 @@ class SaleController extends Controller
 
             return response()->success(description : "Sale found.", data : $data);
         }catch (\Exception | \Throwable $e){
+            if(config('app.debug')){
+                return response()->error(description : $e->getMessage(), data: $e->getTrace());
+            }
+
             return response()->error();
         }
     }
@@ -54,6 +62,10 @@ class SaleController extends Controller
 
             return response()->success(description : "Sales found.", data : $data);
         }catch (\Exception | \Throwable $e){
+            if(config('app.debug')){
+                return response()->error(description : $e->getMessage(), data: $e->getTrace());
+            }
+
             return response()->error();
         }
     }
@@ -74,7 +86,7 @@ class SaleController extends Controller
             if($e instanceof SaleAlreadyCancelledException){
                 return response()->error(description: $e->getMessage(), httpStatusCode: $e->getCode());
             }
-            
+
             if(config('app.debug')){
                 return response()->error(description : $e->getMessage(), data: $e->getTrace());
             }

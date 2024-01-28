@@ -14,6 +14,10 @@ class ProductController extends Controller
 
             return response()->success('Products retrieved successfully', 200, $products);
         }catch (\Exception | \Throwable $e){
+            if(config('app.debug')){
+                return response()->error(description : $e->getMessage(), data: $e->getTrace());
+            }
+
             return response()->error();
         }
     }
