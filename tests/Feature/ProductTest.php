@@ -70,3 +70,13 @@ it('lists products successfully with correct structure and data types', function
         expect($product['product_description'])->toBeString();
     }
 });
+
+it('tests generic response when database exception occurs', function () {
+    // Simula uma falha no banco de dados
+    DB::shouldReceive('select')->andThrow(new \Exception('Database error'));
+
+    $response = get('/api/products/list');
+
+    $response->assertStatus(500);
+    $response->assertJson(['message' => 'error', 'description' => 'Internal Server Error']);
+});
