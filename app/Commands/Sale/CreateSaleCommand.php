@@ -2,6 +2,7 @@
 
 namespace App\Commands\Sale;
 
+use App\Commands\SaleProduct\CreateSaleProductCommand;
 use App\Models\ListSaleStatus;
 use App\Models\Product;
 use App\Models\Sale;
@@ -15,20 +16,7 @@ class CreateSaleCommand
             'list_sale_status_id' => ListSaleStatus::PENDING,
         ]);
 
-        $saleTotalPrice = 0;
-        foreach ($products as $incomingProduct) {
-            $product = Product::find($incomingProduct['id']);
-
-            SaleProduct::create([
-                'sale_id'    => $newSale->id,
-                'product_id' => $incomingProduct['id'],
-                'amount'     => $incomingProduct['amount'],
-            ]);
-
-            $saleTotalPrice += $product['price'] * $incomingProduct['amount'];
-        }
-        $newSale->total_price = $saleTotalPrice;
-        $newSale->save();
+        CreateSaleProductCommand::execute($newSale->id, $products);
 
         return $newSale->id;
     }
