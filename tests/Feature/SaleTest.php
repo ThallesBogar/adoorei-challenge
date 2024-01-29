@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\ListSaleStatus;
 use App\Models\Product;
 use App\Models\Sale;
+use App\Models\SaleProduct;
 use Illuminate\Support\Facades\Artisan;
 use function Pest\Laravel\getJson;
 use function Pest\Laravel\postJson;
@@ -293,4 +295,388 @@ it('returns an error for canceling a sale that is already canceled', function ()
 
     $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
     $cancelSaleResponse->assertStatus(409);
+});
+
+it('add a product to a sale successfully', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(200);
+});
+
+it('tests if adding a product to a sale updates the total_price correctly', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $sale   = Sale::find($saleId);
+    expect($sale->total_price)->toBe(1 * $product1->price + 2 * $product2->price);
+});
+
+it('tests if adding same product to a sale updates the amount correctly', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $saleProduct = SaleProduct::where('sale_id', $saleId)->where('product_id', $product1->id)->first();
+
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $saleProductAfterAdd = SaleProduct::where('sale_id', $saleId)->where('product_id', $product1->id)->get()->toArray();
+
+    expect(count($saleProductAfterAdd))->toBe(1)->and($saleProductAfterAdd[0]['amount'])->toBe(3);
+});
+
+it('tests if adding a product to a sale with status PROCESSING returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+    $sale->list_sale_status_id = ListSaleStatus::PROCESSING;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status PAID returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+    $sale->list_sale_status_id = ListSaleStatus::PAID;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status IN_TRANSIT_SHIPPED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+    $sale->list_sale_status_id = ListSaleStatus::IN_TRANSIT_SHIPPED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status DELIVERED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+    $sale->list_sale_status_id = ListSaleStatus::DELIVERED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status CANCELED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+    $sale->list_sale_status_id = ListSaleStatus::CANCELED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status RETURNED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 1,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+    $sale->list_sale_status_id = ListSaleStatus::RETURNED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status PARTIALLY_REFUNDED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 3,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+
+    $sale->list_sale_status_id = ListSaleStatus::PARTIALLY_REFUNDED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status PAYMENT_FAILED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 3,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+
+    $sale->list_sale_status_id = ListSaleStatus::PAYMENT_FAILED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
+});
+
+it('tests if adding a product to a sale with status REFUNDED returns an error', function (){
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
+
+    $product1  = Product::first();
+
+    $createSaleResponse = postJson('/api/sales', [
+        'products' => [
+            [
+                'id'     => $product1->id,
+                'amount' => 3,
+            ],
+        ],
+    ]);
+
+    $saleId = $createSaleResponse->json('data.sale_id');
+    $sale   = Sale::find($saleId);
+
+    $sale->list_sale_status_id = ListSaleStatus::REFUNDED;
+    $sale->save();
+
+    $product2  = Product::skip(1)->first();
+    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+        'products' => [
+            [
+                'id'     => $product2->id,
+                'amount' => 2,
+            ],
+        ],
+    ]);
+
+    $addProductResponse->assertStatus(409);
 });
