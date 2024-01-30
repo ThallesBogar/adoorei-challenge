@@ -40,7 +40,7 @@ class SaleController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=200,
+     *         response=201,
      *         description="Sale created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="Sale created successfully."),
@@ -88,7 +88,7 @@ class SaleController extends Controller
             DB::commit();
             $data = GetSaleQuery::execute($newSaleId);
 
-            return response()->success(description : "Sale created successfully.", data : $data);
+            return response()->success(description : "Sale created successfully.", httpStatusCode: 201, data : $data);
         }catch (\Exception | \Throwable | SaleStatusCannotHaveNewProductsException $e){
             DB::rollBack();
 
