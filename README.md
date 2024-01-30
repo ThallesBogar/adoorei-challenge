@@ -1,6 +1,6 @@
 # Introdução
 
-Esta API foi desenvoldida como parte do desafio técnico no processo seletivo para a vaga de Pessoa Desenvolvedora Back-end na Adoorei.
+Esta API foi desenvolvida como parte do desafio técnico no processo seletivo para a vaga de Pessoa Desenvolvedora Back-end na Adoorei.
 
 # O que foi desenvolvido
 Foram desenvolvidos os seguintes endpoints no formato RESTful:
@@ -25,7 +25,9 @@ Para executar a API, é necessário ter instalado o [Docker](https://docs.docker
 
 # Como executar
 - Clonar repositório na sua máquina ou utilizar o Codespaces
-- Executar o arquivos `init.sh` localizado na raiz do projeto, através do comando `./init.sh`
+- Criar o arquivo `.env` na raiz do projeto, com base no arquivo `.env.example` com o seguinte comando: `cp .env.example .env`. Para facilitar, todas as variáveis necessárias já estão preechidas, mas normalmente não seria o caso.
+` # Senha do usuário do banco de dados que desejar. Ex: adoorei-password-test
+- Executar o arquivo `init.sh` localizado na raiz do projeto, através do comando `./init.sh`
 - Ou se preferir, você pode executar os seguintes comandos manualmente:
   - `docker compose build`
   - `docker compose up -d`
