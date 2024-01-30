@@ -1,4 +1,4 @@
-docker compose build
+docker compose build api
 docker compose up -d
 docker compose exec api composer install
 docker compose exec api php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"
