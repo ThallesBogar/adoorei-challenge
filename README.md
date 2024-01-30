@@ -30,7 +30,7 @@ Para executar a API, é necessário ter instalado o [Docker](https://docs.docker
 - Criar o arquivo `.env` na raiz do projeto, com base no arquivo `.env.example` com o seguinte comando: `cp .env.example .env`. Para facilitar, todas as variáveis necessárias já estão preechidas, mas normalmente não seria o caso.
 - Executar o arquivo `init.sh` localizado na raiz do projeto, através do comando `./init.sh`
 - Ou se preferir, você pode executar os seguintes comandos manualmente:
-  - `docker compose build`
+  - `docker compose build api`
   - `docker compose up -d`
   - `docker compose exec api composer install`
   - `docker compose exec api php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"`
