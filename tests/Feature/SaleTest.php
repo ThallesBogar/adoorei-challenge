@@ -6,8 +6,6 @@ use App\Models\Sale;
 use App\Models\SaleProduct;
 use Illuminate\Support\Facades\Artisan;
 
-use function Pest\Laravel\getJson;
-use function Pest\Laravel\postJson;
 
 beforeEach(function (){
     config([
@@ -25,7 +23,7 @@ it('tests creation of valid sale', function (){
 
     $product1 = Product::first();
     $product2 = Product::skip(1)->first();
-    $response = postJson('/api/sales', [
+    $response = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -66,7 +64,7 @@ it('tests if sale total_price is being calculated correctly when creating new sa
 
     $product1 = Product::first();
     $product2 = Product::skip(1)->first();
-    $response = postJson('/api/sales', [
+    $response = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -88,13 +86,13 @@ it('tests creation of invalid sales', function (){
     Artisan::call('migrate:fresh');
     Artisan::call('db:seed');
 
-    $noProductsArray = postJson('/api/sales', []);
+    $noProductsArray = $this->postJson('/api/sales', []);
     $noProductsArray->assertStatus(422);
 
-    $emptyProductsArray = postJson('/api/sales', ['products' => []]);
+    $emptyProductsArray = $this->postJson('/api/sales', ['products' => []]);
     $emptyProductsArray->assertStatus(422);
 
-    $productWithoutId = postJson('/api/sales', [
+    $productWithoutId = $this->postJson('/api/sales', [
         'products' => [
             [
                 'amount' => 1,
@@ -103,7 +101,7 @@ it('tests creation of invalid sales', function (){
     ]);
     $productWithoutId->assertStatus(422);
 
-    $productWithoutAmount = postJson('/api/sales', [
+    $productWithoutAmount = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id' => 1,
@@ -118,7 +116,7 @@ it('retrieves a sale successfully', function (){
     Artisan::call('db:seed');
 
     $product  = Product::first();
-    $response = postJson('/api/sales', [
+    $response = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -132,7 +130,7 @@ it('retrieves a sale successfully', function (){
     ]);
 
     $saleId   = $response->json('data.sale_id');
-    $response = getJson("/api/sales/{$saleId}");
+    $response = $this->getJson("/api/sales/{$saleId}");
     $response->assertStatus(200);
     $response->assertJsonStructure([
         'message',
@@ -159,7 +157,7 @@ it('returns an error for retrieving a non-existent sale', function (){
     Artisan::call('migrate:fresh');
     $nonExistentId = 999999;
 
-    $response = getJson("/api/sales/{$nonExistentId}");
+    $response = $this->getJson("/api/sales/{$nonExistentId}");
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -167,7 +165,7 @@ it('returns an error for retrieving a non-existent sale', function (){
 
 it('validates the input for retrieving a sale with invalid id', function (){
     Artisan::call('migrate:fresh');
-    $response = getJson("/api/sales/not-an-id");
+    $response = $this->getJson("/api/sales/not-an-id");
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -178,7 +176,7 @@ it('lists sales successfully with correct structure and data types', function ()
     Artisan::call('db:seed');
 
     $product            = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -191,7 +189,7 @@ it('lists sales successfully with correct structure and data types', function ()
         ],
     ]);
 
-    $getSalesResponse = getJson("/api/sales/list");
+    $getSalesResponse = $this->getJson("/api/sales");
     $getSalesResponse->assertStatus(200);
     $getSalesResponse->assertJsonStructure([
         'message',
@@ -236,7 +234,7 @@ it('cancel a sale successfully', function (){
     Artisan::call('db:seed');
 
     $product            = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -250,7 +248,7 @@ it('cancel a sale successfully', function (){
     ]);
 
     $saleId             = $createSaleResponse->json('data.sale_id');
-    $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
+    $cancelSaleResponse = $this->postJson("/api/sales/{$saleId}/cancel", []);
     $cancelSaleResponse->assertStatus(200);
 });
 
@@ -258,7 +256,7 @@ it('returns an error for canceling a non-existent sale', function (){
     Artisan::call('migrate:fresh');
     $nonExistentId = 999999;
 
-    $response = postJson("/api/sales/{$nonExistentId}/cancel", []);
+    $response = $this->postJson("/api/sales/{$nonExistentId}/cancel", []);
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -266,7 +264,7 @@ it('returns an error for canceling a non-existent sale', function (){
 
 it('validates the input for canceling a sale with invalid id', function (){
     Artisan::call('migrate:fresh');
-    $response = postJson("/api/sales/not-an-id/cancel", []);
+    $response = $this->postJson("/api/sales/not-an-id/cancel", []);
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -277,7 +275,7 @@ it('returns an error for canceling a sale that is already canceled', function ()
     Artisan::call('db:seed');
 
     $product            = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -291,10 +289,10 @@ it('returns an error for canceling a sale that is already canceled', function ()
     ]);
 
     $saleId             = $createSaleResponse->json('data.sale_id');
-    $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
+    $cancelSaleResponse = $this->postJson("/api/sales/{$saleId}/cancel", []);
     $cancelSaleResponse->assertStatus(200);
 
-    $cancelSaleResponse = postJson("/api/sales/{$saleId}/cancel", []);
+    $cancelSaleResponse = $this->postJson("/api/sales/{$saleId}/cancel", []);
     $cancelSaleResponse->assertStatus(409);
 });
 
@@ -303,7 +301,7 @@ it('add a product to a sale successfully', function (){
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -315,7 +313,7 @@ it('add a product to a sale successfully', function (){
     $saleId = $createSaleResponse->json('data.sale_id');
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -332,7 +330,7 @@ it('tests if adding a product to a sale updates the total_price correctly', func
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -344,7 +342,7 @@ it('tests if adding a product to a sale updates the total_price correctly', func
     $saleId = $createSaleResponse->json('data.sale_id');
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -362,7 +360,7 @@ it('tests if adding same product to a sale updates the amount correctly', functi
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -374,7 +372,7 @@ it('tests if adding same product to a sale updates the amount correctly', functi
     $saleId      = $createSaleResponse->json('data.sale_id');
     $saleProduct = SaleProduct::where('sale_id', $saleId)->where('product_id', $product1->id)->first();
 
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -393,7 +391,7 @@ it('tests if adding a product to a sale with status PROCESSING returns an error'
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -408,7 +406,7 @@ it('tests if adding a product to a sale with status PROCESSING returns an error'
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -425,7 +423,7 @@ it('tests if adding a product to a sale with status PAID returns an error', func
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -440,7 +438,7 @@ it('tests if adding a product to a sale with status PAID returns an error', func
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -457,7 +455,7 @@ it('tests if adding a product to a sale with status IN_TRANSIT_SHIPPED returns a
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -472,7 +470,7 @@ it('tests if adding a product to a sale with status IN_TRANSIT_SHIPPED returns a
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -489,7 +487,7 @@ it('tests if adding a product to a sale with status DELIVERED returns an error',
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -504,7 +502,7 @@ it('tests if adding a product to a sale with status DELIVERED returns an error',
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -521,7 +519,7 @@ it('tests if adding a product to a sale with status CANCELED returns an error', 
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -536,7 +534,7 @@ it('tests if adding a product to a sale with status CANCELED returns an error', 
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -553,7 +551,7 @@ it('tests if adding a product to a sale with status RETURNED returns an error', 
     Artisan::call('db:seed');
 
     $product1           = Product::first();
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -568,7 +566,7 @@ it('tests if adding a product to a sale with status RETURNED returns an error', 
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -586,7 +584,7 @@ it('tests if adding a product to a sale with status PARTIALLY_REFUNDED returns a
 
     $product1 = Product::first();
 
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -602,7 +600,7 @@ it('tests if adding a product to a sale with status PARTIALLY_REFUNDED returns a
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -620,7 +618,7 @@ it('tests if adding a product to a sale with status PAYMENT_FAILED returns an er
 
     $product1 = Product::first();
 
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -636,7 +634,7 @@ it('tests if adding a product to a sale with status PAYMENT_FAILED returns an er
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -654,7 +652,7 @@ it('tests if adding a product to a sale with status REFUNDED returns an error', 
 
     $product1 = Product::first();
 
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product1->id,
@@ -670,7 +668,7 @@ it('tests if adding a product to a sale with status REFUNDED returns an error', 
     $sale->save();
 
     $product2           = Product::skip(1)->first();
-    $addProductResponse = postJson("/api/sales/{$saleId}/products", [
+    $addProductResponse = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'id'     => $product2->id,
@@ -686,7 +684,7 @@ it('tests adding a product with non-existing sale id returns an error', function
     Artisan::call('migrate:fresh');
     $nonExistentId = 999999;
 
-    $response = postJson("/api/sales/{$nonExistentId}/products", []);
+    $response = $this->postJson("/api/sales/{$nonExistentId}/products", []);
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -694,7 +692,7 @@ it('tests adding a product with non-existing sale id returns an error', function
 
 it('tests if adding a product with invalid sale id returns an error', function (){
     Artisan::call('migrate:fresh');
-    $response = postJson("/api/sales/not-an-id/products", []);
+    $response = $this->postJson("/api/sales/not-an-id/products", []);
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -706,7 +704,7 @@ it('tests if adding a product with empty products array returns an error', funct
 
     $product = Product::first();
 
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -717,7 +715,7 @@ it('tests if adding a product with empty products array returns an error', funct
 
     $saleId = $createSaleResponse->json('data.sale_id');
 
-    $response = postJson("/api/sales/{$saleId}/products", []);
+    $response = $this->postJson("/api/sales/{$saleId}/products", []);
 
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
@@ -729,7 +727,7 @@ it('tests if adding a product with product without id returns an error', functio
 
     $product = Product::first();
 
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -740,7 +738,7 @@ it('tests if adding a product with product without id returns an error', functio
 
     $saleId = $createSaleResponse->json('data.sale_id');
 
-    $response = postJson("/api/sales/{$saleId}/products", [
+    $response = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'amount' => 3,
@@ -758,7 +756,7 @@ it('tests if adding a product with product without amount returns an error', fun
 
     $product = Product::first();
 
-    $createSaleResponse = postJson('/api/sales', [
+    $createSaleResponse = $this->postJson('/api/sales', [
         'products' => [
             [
                 'id'     => $product->id,
@@ -769,14 +767,14 @@ it('tests if adding a product with product without amount returns an error', fun
 
     $saleId = $createSaleResponse->json('data.sale_id');
 
-    $response = postJson("/api/sales/{$saleId}/products", [
+    $response = $this->postJson("/api/sales/{$saleId}/products", [
         'products' => [
             [
                 'amount' => 3,
             ],
         ],
     ]);
-    
+
     $response->assertStatus(422);
     $response->assertJson(['message' => 'error']);
 });

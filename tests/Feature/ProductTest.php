@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Artisan;
 
 use Illuminate\Support\Facades\DB;
 
-use function Pest\Laravel\get;
-use function Pest\Laravel\getJson;
 
 beforeEach(function (){
     config([
@@ -22,6 +20,7 @@ beforeEach(function (){
 
 it('lists products successfully with correct structure and data types', function (){
     Artisan::call('migrate:fresh');
+    Artisan::call('db:seed');
 
     $store = Store::create(
         [
@@ -39,7 +38,7 @@ it('lists products successfully with correct structure and data types', function
         'list_product_category_id' => $productCategory->id
     ]);
 
-    $response = get('/api/products/list');
+    $response = $this->get('/api/products');
 
     $response->assertStatus(200);
 
@@ -77,7 +76,7 @@ it('tests generic response when database exception occurs', function () {
     // Simula uma falha no banco de dados
     DB::shouldReceive('select')->andThrow(new \Exception('Database error'));
 
-    $response = get('/api/products/list');
+    $response = $this->get('/api/products');
 
     $response->assertStatus(500);
     $response->assertJson(['message' => 'error']);

@@ -65,6 +65,7 @@ class SaleController extends Controller
         try{
             $salesId = GetAllSaleIdQuery::execute();
 
+            $data = [];
             foreach ($salesId as $id) {
                 $data[] = GetSaleQuery::execute($id);
             }
