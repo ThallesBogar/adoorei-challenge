@@ -33,6 +33,8 @@ Para executar a API, é necessário ter instalado o [Docker](https://docs.docker
   - `docker compose build api`
   - `docker compose up -d`
   - `docker compose exec api composer install`
+  - `docker compose exec api ./vendor/bin/pest --init`
+  - `docker compose exec api php artisan key:generate`
   - `docker compose exec api php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"`
   - `docker compose exec api php artisan l5-swagger:generate`
   - `docker compose exec api composer dump-autoload`
@@ -40,7 +42,7 @@ Para executar a API, é necessário ter instalado o [Docker](https://docs.docker
 - A API estará disponível em `http://localhost:80/api`
 
 # Como executar os testes
-Para executar os testes, basta executar o comando `docker-compose exec api php artisan test`
+Para executar os testes, basta executar o comando `docker compose exec api php artisan test`
 
 # Documentação da API
 A documentação da API foi feita utilizando o Swagger/OpenAPI. Para acessar, basta acessar o link http://localhost/api/docs
