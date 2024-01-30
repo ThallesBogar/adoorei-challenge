@@ -35,6 +35,7 @@ Para executar a API, é necessário ter instalado o [Docker](https://docs.docker
   - `docker compose exec api composer install`
   - `docker compose exec api php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider"`
   - `docker compose exec api php artisan l5-swagger:generate`
+  - `docker compose exec api composer dump-autoload`
   - `docker compose exec api php artisan migrate --seed`
 - A API estará disponível em `http://localhost:80/api`
 
