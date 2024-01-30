@@ -21,3 +21,5 @@ yarn-error.log
 /l5-swagger
 /resources/views/vendor
 /storage/api-docs
+/tests/Feature/ExampleTest.php
+/tests/Unit/ExampleTest.php
