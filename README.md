@@ -24,6 +24,8 @@ Para o levantamento dos serviços, foi utilizado o Docker e Docker Compose, com 
 Para executar a API, é necessário ter instalado o [Docker](https://docs.docker.com/get-docker/) e o [Docker Compose](https://docs.docker.com/compose/install/).
 
 # Como executar
+**Antes de iniciar verifique se as portas 80 e 3306 estão livres, pois ela serão utilizadas pelo Nginx e MySQL, respectivamente.**
+
 - Clonar repositório na sua máquina ou utilizar o Codespaces
 - Criar o arquivo `.env` na raiz do projeto, com base no arquivo `.env.example` com o seguinte comando: `cp .env.example .env`. Para facilitar, todas as variáveis necessárias já estão preechidas, mas normalmente não seria o caso.
 - Executar o arquivo `init.sh` localizado na raiz do projeto, através do comando `./init.sh`
@@ -35,8 +37,6 @@ Para executar a API, é necessário ter instalado o [Docker](https://docs.docker
   - `docker compose exec api php artisan l5-swagger:generate`
   - `docker compose exec api php artisan migrate --seed`
 - A API estará disponível em `http://localhost:80/api`
-
-**Obs: As portas 80 e 3306 não podem estar em uso.**
 
 # Como executar os testes
 Para executar os testes, basta executar o comando `docker-compose exec api php artisan test`
